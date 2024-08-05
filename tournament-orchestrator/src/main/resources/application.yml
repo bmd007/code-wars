@@ -1,0 +1,57 @@
+server.port: 8090
+
+management:
+  health:
+    defaults.enabled: true
+    diskspace.enabled: false
+  endpoints:
+    web:
+      base-path: /
+      exposure.include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      enabled: true
+      show-details: never
+    auditevents.enabled: false
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      enable.jvm: true
+      enable.jvm.gc.pause: true
+      enable.jvm.memory: true
+      enable.jvm.threads: true
+      enable.process: true
+      enable.process.files: true
+      enable.http: true
+      enable.http.server.requests: true
+      enable.logback: true
+      enable.system: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+spring:
+  application:
+    name: tournament-orchestrator
+  kafka:
+    bootstrap-servers: "0.0.0.0:29092"
+    producer:
+      retries: 3
+      acks: all
+      key-serializer: org.springframework.kafka.support.serializer.StringOrBytesSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    #      properties:
+    #        - spring.json.type.mapping: WonderSeekerLocationUpdate:statefull.geofencing.faas.common.dto.WonderSeekerLocationUpdate
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+
+kafka:
+  topic:
+    config:
+      event: '1:1'
+      changelog: '1:1'
+      messageEvents: '1:1'

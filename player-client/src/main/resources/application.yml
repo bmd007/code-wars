@@ -1,0 +1,96 @@
+server.port: 8081
+
+management:
+  health:
+    defaults.enabled: true
+    diskspace.enabled: false
+  endpoints:
+    web:
+      base-path: /
+      exposure.include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      enabled: true
+      show-details: never
+    auditevents.enabled: false
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      enable.jvm: true
+      enable.jvm.gc.pause: true
+      enable.jvm.memory: true
+      enable.jvm.threads: true
+      enable.process: true
+      enable.process.files: true
+      enable.http: true
+      enable.http.server.requests: true
+      enable.logback: true
+      enable.system: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+spring:
+  application:
+    name: player-client
+  kafka:
+    bootstrap-servers: "0.0.0.0:29092"
+    producer:
+      retries: 3
+      acks: all
+      key-serializer: org.springframework.kafka.support.serializer.StringOrBytesSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+
+kafka:
+  topic:
+    config:
+      event: '1:1'
+      changelog: '1:1'
+      messageEvents: '1:1'
+
+game:
+  client:
+    game-commands-topic: ${GAME_COMMANDS_TOPIC}
+    game-events-topic: ${GAME_EVENTS_TOPIC}
+    game-id: ${GAME_ID}
+    player-id: ${PLAYER_ID}
+    game-engine-host: ${GAME_ENGINE_HOST}
+    team-id: ${TEAM_ID}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+game:
+  client:
+    game-commands-topic: "player-a-commands"
+    game-events-topic: "game-events"
+    game-id: "game-1"
+    team-id: "teamA"
+    player-id: "tankA"
+    game-engine-host: "http://localhost:8080"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local-tankb
+
+server.port: 8082
+
+game:
+  client:
+    game-commands-topic: "player-b-commands"
+    game-events-topic: "game-events"
+    game-id: "game-1"
+    team-id: "teamB"
+    player-id: "tankB"
+    game-engine-host: "http://localhost:8080"

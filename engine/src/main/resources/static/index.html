@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tank Battle Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #game-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        #game-board {
+            width: 500px;
+            height: 500px;
+            border: 2px solid #333;
+            position: relative;
+            background-color: #8B4513; /* Brown color for ground */
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        .tank {
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            background-size: contain;
+            background-repeat: no-repeat;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        #tank-a {
+            background-image: url('tank-a.png');
+        }
+
+        #tank-b {
+            background-image: url('tank-b.png');
+        }
+
+        .stone {
+            background-image: url('stone.png');
+            z-index: 5;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .joystick {
+            width: 150px;
+            height: 150px;
+            background-color: #ddd;
+            border-radius: 50%;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .joystick-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+        }
+
+        .joystick-button:hover {
+            background-color: #555;
+        }
+
+        .joystick-up {
+            top: 5px;
+            left: 55px;
+        }
+
+        .joystick-right {
+            top: 55px;
+            right: 5px;
+        }
+
+        .joystick-down {
+            bottom: 5px;
+            left: 55px;
+        }
+
+        .joystick-left {
+            top: 55px;
+            left: 5px;
+        }
+
+        .joystick-center {
+            top: 55px;
+            left: 55px;
+            background-color: #dd0000;
+        }
+
+        .fire-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #f00;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .delete-game-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #f00;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .fire-button:hover {
+            background-color: #d00;
+        }
+
+        .delete-game-button:hover {
+            background-color: #d00;
+        }
+    </style>
+</head>
+<body>
+<div id="game-container">
+    <div class="controls">
+        <h3>Tank A Controls</h3>
+        <div class="joystick">
+            <button class="joystick-button joystick-up" onclick="sendCommand('tankA', 'MOVE_UP')">↑</button>
+            <button class="joystick-button joystick-right" onclick="sendCommand('tankA', 'MOVE_RIGHT')">→</button>
+            <button class="joystick-button joystick-down" onclick="sendCommand('tankA', 'MOVE_DOWN')">↓</button>
+            <button class="joystick-button joystick-left" onclick="sendCommand('tankA', 'MOVE_LEFT')">←</button>
+            <button class="joystick-button joystick-center" onclick="sendCommand('tankA', 'FIRE')">F</button>
+        </div>
+        <!--        <div class="joystick">-->
+        <!--            <button class="joystick-button joystick-up" onclick="sendCommand('tankA', 'LOOK_UP')">U</button>-->
+        <!--            <button class="joystick-button joystick-down" onclick="sendCommand('tankA', 'LOOK_DOWN')">D</button>-->
+        <!--            <button class="joystick-button joystick-right" onclick="sendCommand('tankA', 'LOOK_RIGHT')">R</button>-->
+        <!--            <button class="joystick-button joystick-left" onclick="sendCommand('tankA', 'LOOK_LEFT')">L</button>-->
+        <!--        </div>-->
+        <!--        <button class="fire-button" onclick="sendCommand('tankA', 'FIRE')">FIRE</button>-->
+    </div>
+
+    <div id="game-board">
+        <!-- Cells, tanks, and stones will be added dynamically -->
+    </div>
+    <div class="controls">
+        <button class="delete-game-button" onclick="startGame()">Start</button>
+        <button class="delete-game-button" onclick="deleteGame()">END</button>
+    </div>
+
+    <div class="controls">
+        <h3>Tank B Controls</h3>
+        <div class="joystick">
+            <button class="joystick-button joystick-up" onclick="sendCommand('tankB', 'MOVE_UP')">↑</button>
+            <button class="joystick-button joystick-right" onclick="sendCommand('tankB', 'MOVE_RIGHT')">→</button>
+            <button class="joystick-button joystick-down" onclick="sendCommand('tankB', 'MOVE_DOWN')">↓</button>
+            <button class="joystick-button joystick-left" onclick="sendCommand('tankB', 'MOVE_LEFT')">←</button>
+            <button class="joystick-button joystick-center" onclick="sendCommand('tankB', 'FIRE')">F</button>
+        </div>
+        <!--        <div class="joystick">-->
+        <!--            <button class="joystick-button joystick-up" onclick="sendCommand('tankB', 'LOOK_UP')">U</button>-->
+        <!--            <button class="joystick-button joystick-down" onclick="sendCommand('tankB', 'LOOK_DOWN')">D</button>-->
+        <!--            <button class="joystick-button joystick-right" onclick="sendCommand('tankB', 'LOOK_RIGHT')">R</button>-->
+        <!--            <button class="joystick-button joystick-left" onclick="sendCommand('tankB', 'LOOK_LEFT')">L</button>-->
+        <!--        </div>-->
+        <!--        <button class="fire-button" onclick="sendCommand('tankB', 'FIRE')">FIRE</button>-->
+    </div>
+</div>
+
+<script>
+    const gameBoard = document.getElementById('game-board');
+    const boardSize = 10;
+    let gameState = null;
+    let gameId = 'current'; // Default game ID
+
+    function initializeBoard() {
+        for (let y = 0; y < boardSize; y++) {
+            for (let x = 0; x < boardSize; x++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.style.left = `${x * 50}px`;
+                cell.style.top = `${y * 50}px`;
+                gameBoard.appendChild(cell);
+            }
+        }
+
+        const tankA = document.createElement('div');
+        tankA.id = 'tank-a';
+        tankA.className = 'tank';
+        gameBoard.appendChild(tankA);
+
+        const tankB = document.createElement('div');
+        tankB.id = 'tank-b';
+        tankB.className = 'tank';
+        gameBoard.appendChild(tankB);
+    }
+
+    async function sendCommand(tankId, action) {
+        console.log(`Sending command: ${action} for ${tankId}`);
+        const teamId = tankId === 'tankA' ? 'teamA' : 'teamB';
+        try {
+            const response = await fetch(`http://127.0.0.1:8080/games/${gameId}/commands`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+
+                body: JSON.stringify({gameId, tankId, teamId, action}),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to send command');
+            }
+            await fetchGameState();
+        } catch (error) {
+            console.error('Error sending command:', error);
+        }
+    }
+
+    async function startGame() {
+        console.log(`Starting game: ${gameId}`);
+        try {
+            const response = await fetch(`http://127.0.0.1:8080/games`, {
+                method: 'POST',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to send command');
+            }
+            const data = await response.json();
+            window.location.reload();
+            updateGameState(data);
+        } catch (error) {
+            console.error('Error sending command:', error);
+        }
+    }
+
+    async function deleteGame() {
+        console.log(`Deleting game: ${gameId}`);
+        try {
+            const response = await fetch(`http://127.0.0.1:8080/games/${gameId}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) {
+                throw new Error('Failed to send command');
+            }
+            window.location.reload();
+        } catch (error) {
+            console.error('Error sending command:', error);
+        }
+    }
+
+    async function fetchGameState() {
+        try {
+            const response = await fetch(`http://127.0.0.1:8080/games/${gameId}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch game state');
+            }
+            const data = await response.json();
+            updateGameState(data);
+        } catch (error) {
+            console.error('Error fetching game state:', error);
+        }
+    }
+
+    function updateGameState(newState) {
+        gameState = newState;
+        if (gameState.over) {
+            if (!gameState.tankA) {
+                destroyTank('tank-a');
+                return;
+            }
+            if (!gameState.tankB) {
+                destroyTank('tank-b');
+                return;
+            }
+            return;
+        }
+
+        // Update tanks
+        updateTank('tank-a', gameState.tankA);
+        updateTank('tank-b', gameState.tankB);
+
+        // Update stones
+        updateStones(gameState.battleField.gameObjects);
+    }
+
+    function updateTank(tankId, tankState) {
+        const tank = document.getElementById(tankId);
+        tank.style.left = `${tankState.x * 50}px`;
+        tank.style.top = `${tankState.y * 50}px`;
+        tank.style.transform = `rotate(${getRotation(tankState.sightDirection)}deg)`;
+    }
+
+    function destroyTank(tankId) {
+        const tank = document.getElementById(tankId);
+        tank.remove();
+        alert(`Tank ${tankId} is destroyed!`);
+    }
+
+    function updateStones(gameObjects) {
+        // Remove existing stones
+        document.querySelectorAll('.stone').forEach(stone => stone.remove());
+
+        // Add new stones
+        gameObjects.forEach((row, x) => {
+            row.forEach((cell, y) => {
+                if (cell && cell.type === 'Stone') {
+                    const stoneElement = document.createElement('div');
+                    stoneElement.className = 'cell stone';
+                    stoneElement.style.left = `${x * 50}px`;
+                    stoneElement.style.top = `${y * 50}px`;
+                    gameBoard.appendChild(stoneElement);
+                }
+            });
+        });
+    }
+
+    function getRotation(direction) {
+        switch (direction) {
+            case 'UP':
+                return 0;
+            case 'RIGHT':
+                return 90;
+            case 'DOWN':
+                return 180;
+            case 'LEFT':
+                return 270;
+            default:
+                return 0;
+        }
+    }
+
+    // Initialize the game board
+    initializeBoard();
+
+    // Fetch initial game state
+    fetchGameState();
+</script>
+</body>
+</html>

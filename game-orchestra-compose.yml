@@ -1,0 +1,89 @@
+services:
+  kafka:
+#    https://github.com/confluentinc/cp-all-in-one/blob/7.3.0-post/cp-all-in-one-kraft/docker-compose.yml
+    image: confluentinc/cp-kafka:7.3.0
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "29092:29092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093,PLAINTEXT_HOST://0.0.0.0:29092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+    volumes:
+      - ./kafka_update_run.sh:/tmp/update_run.sh
+    command: "bash -c 'if [ ! -f /tmp/update_run.sh ]; then echo \"ERROR: Did you forget the update_run.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /tmp/update_run.sh && /etc/confluent/docker/run ; fi'"
+
+  engine:
+    image: bmd007/code-wars-engine
+    hostname: engine
+    container_name: engine
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+    environment:
+      GAME_ID: b9f6f06e-cf77-40f6-9e88-68ad70ee5a1b
+      PLAYER_A_ID: A
+      PLAYER_B_ID: A
+      PLAYER_A_COMMANDS_TOPIC: A-commands
+      PLAYER_B_COMMANDS_TOPIC: B-commands
+      GAME_EVENTS_TOPIC: game-events
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      SPRING_PROFILES_ACTIVE: "compose"
+      SPRING_APPLICATION_NAME: "engine"
+      SERVER_PORT: 8080
+ 
+  player-a:
+    image: bmd007/codewars-player
+    hostname: player-a
+    container_name: player-a
+    ports:
+      - "8081:8081"
+    depends_on:
+      - engine
+    environment:
+      GAME_ID: b9f6f06e-cf77-40f6-9e88-68ad70ee5a1b
+      TEAM_ID: "A"
+      PLAYER_ID: A
+      GAME_COMMANDS_TOPIC: A-commands
+      GAME_EVENTS_TOPIC: game-events
+      GAME_ENGINE_HOST: "http://engine:8080"
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      SPRING_PROFILES_ACTIVE: "compose"
+      SPRING_APPLICATION_NAME: "player-a"
+      SERVER_PORT: 8081
+
+  player-b:
+    image: bmd007/codewars-player
+    hostname: player-b
+    container_name: player-b
+    ports:
+      - "8082:8082"
+    depends_on:
+      - engine
+    environment:
+      GAME_ID: b9f6f06e-cf77-40f6-9e88-68ad70ee5a1b
+      TEAM_ID: "B"
+      PLAYER_ID: B
+      GAME_EVENTS_TOPIC: game-events
+      GAME_COMMANDS_TOPIC: B-commands
+      GAME_ENGINE_HOST: "http://engine:8080"
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      SPRING_PROFILES_ACTIVE: "compose"
+      SPRING_APPLICATION_NAME: "player-b"
+      SERVER_PORT: 8082
