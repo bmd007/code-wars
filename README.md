@@ -13,11 +13,10 @@ You can code your own player and compete with others.
 ## Writing code to play the game:
 You need to make changes to the [player-client](player-client) project to write your own player.
 What your player code needs to do:
-    1- Get the latest state of the game from the engine by calling the REST API below:
-        `GET http://${gameEngineHost}:8080/games/current`
-    2- Decide on the next move
-    3- Send a [GameCommand.java](player-client/src/main/java/io/github/bmd007/codewars/game/client/GameCommand.java) to the game engine as a kafka message.
-        [PlayerClient.java](player-client/src/main/java/io/github/bmd007/codewars/game/client/PlayerClient.java) has an example of how to send a message to the game engine. 
+
+    1- Get the latest state of the game from the engine by calling the REST API. `GET http://${gameEngineHost}:8080/games/current`.
+    2- Decide on the next move.
+    3- Send a [GameCommand.java](player-client/src/main/java/io/github/bmd007/codewars/game/client/GameCommand.java) to the game engine as a kafka message. [PlayerClient.java](player-client/src/main/java/io/github/bmd007/codewars/game/client/PlayerClient.java) has an example of how to send a message to the game engine. 
 
 As long as you can send commands to the Kafka topic and read the latest state of the game from the REST API, you can write your player in any language you want.
 You just need to provide a Docker image name to the [game-orchestra-compose.yml](game-orchestra-compose.yml) file.
