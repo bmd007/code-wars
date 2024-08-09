@@ -47,6 +47,9 @@ One hit is enough to destroy a wall.
     7- Now your code will be playing against itself
     8- Watch the game on localhost:8080 (do not use the buttons on the UI meaning do not interfere with the game, just watch! :)) )
 
+## Tournament:
+In order to register for the tournament, add a comment to https://github.com/bmd007/code-wars/issues/1
+
 #TODO
  - application ([tournament-orchestrator](tournament-orchestrator)) that fills the [tournament-orchestrator-compose.yml.template](tournament-orchestrator%2Fsrc%2Fmain%2Fresources%2Ftournament-orchestrator-compose.yml.template) and starts games
  - [engine](engine)
