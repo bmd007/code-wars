@@ -37,7 +37,6 @@ The walls van be destroyed by shooting at them as well.
 One hit is enough to destroy a wall.
 
 ### Running your code against itself:
-    0- Run `./gradlew bootBuildImage` in the engine dreictory
     1- In the player-client/build.gradle file, change bootBuildImage.imageName to your desirable docker image name
     2- Replace `bmd007/codewars-player` in the player-client/docker-compose.yml file with your docker image name (corresponding to the previous step)
     3- Finish the implementation of player-client
