@@ -54,20 +54,6 @@
             background-image: url('tank-b.png');
         }
 
-        .bullet {
-            width: 20px;
-            height: 20px;
-            position: absolute;
-            background-color: #ff0000; /* Red bullet for team A */
-            border-radius: 50%;
-            transition: all 0.2s ease;
-            z-index: 15;
-        }
-
-        .bullet.team-b {
-            background-color: #00ff00; /* Green bullet for team B */
-        }
-
         .stone {
             background-image: url('stone.png');
             z-index: 5;
@@ -177,6 +163,13 @@
             <button class="joystick-button joystick-left" onclick="sendCommand('tankA', 'MOVE_LEFT')">←</button>
             <button class="joystick-button joystick-center" onclick="sendCommand('tankA', 'FIRE')">F</button>
         </div>
+        <!--        <div class="joystick">-->
+        <!--            <button class="joystick-button joystick-up" onclick="sendCommand('tankA', 'LOOK_UP')">U</button>-->
+        <!--            <button class="joystick-button joystick-down" onclick="sendCommand('tankA', 'LOOK_DOWN')">D</button>-->
+        <!--            <button class="joystick-button joystick-right" onclick="sendCommand('tankA', 'LOOK_RIGHT')">R</button>-->
+        <!--            <button class="joystick-button joystick-left" onclick="sendCommand('tankA', 'LOOK_LEFT')">L</button>-->
+        <!--        </div>-->
+        <!--        <button class="fire-button" onclick="sendCommand('tankA', 'FIRE')">FIRE</button>-->
     </div>
 
     <div id="game-board">
@@ -196,6 +189,13 @@
             <button class="joystick-button joystick-left" onclick="sendCommand('tankB', 'MOVE_LEFT')">←</button>
             <button class="joystick-button joystick-center" onclick="sendCommand('tankB', 'FIRE')">F</button>
         </div>
+        <!--        <div class="joystick">-->
+        <!--            <button class="joystick-button joystick-up" onclick="sendCommand('tankB', 'LOOK_UP')">U</button>-->
+        <!--            <button class="joystick-button joystick-down" onclick="sendCommand('tankB', 'LOOK_DOWN')">D</button>-->
+        <!--            <button class="joystick-button joystick-right" onclick="sendCommand('tankB', 'LOOK_RIGHT')">R</button>-->
+        <!--            <button class="joystick-button joystick-left" onclick="sendCommand('tankB', 'LOOK_LEFT')">L</button>-->
+        <!--        </div>-->
+        <!--        <button class="fire-button" onclick="sendCommand('tankB', 'FIRE')">FIRE</button>-->
     </div>
 </div>
 
@@ -313,9 +313,6 @@
 
         // Update stones
         updateStones(gameState.battleField.gameObjects);
-
-        // Update bullets
-        updateBullets(gameState.battleField.gameObjects);
     }
 
     function updateTank(tankId, tankState) {
@@ -345,24 +342,6 @@
                     stoneElement.style.left = `${x * 50}px`;
                     stoneElement.style.top = `${y * 50}px`;
                     gameBoard.appendChild(stoneElement);
-                }
-            });
-        });
-    }
-
-    function updateBullets(gameObjects) {
-        // Remove existing bullets
-        document.querySelectorAll('.bullet').forEach(bullet => bullet.remove());
-
-        // Add new bullets
-        gameObjects.forEach((row, x) => {
-            row.forEach((cell, y) => {
-                if (cell && cell.type === 'Bullet') {
-                    const bulletElement = document.createElement('div');
-                    bulletElement.className = `cell bullet ${cell.teamId === 'teamA' ? 'team-a' : 'team-b'}`;
-                    bulletElement.style.left = `${x * 50}px`;
-                    bulletElement.style.top = `${y * 50}px`;
-                    gameBoard.appendChild(bulletElement);
                 }
             });
         });
