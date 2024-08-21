@@ -232,7 +232,7 @@
         console.log(`Sending command: ${action} for ${tankId}`);
         const teamId = tankId === 'tankA' ? 'teamA' : 'teamB';
         try {
-            const response = await fetch(`http://127.0.0.1:8080/games/${gameId}/commands`, {
+            const response = await fetch(`http://localhost:8080/games/${gameId}/commands`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -252,7 +252,7 @@
     async function startGame() {
         console.log(`Starting game: ${gameId}`);
         try {
-            const response = await fetch(`http://127.0.0.1:8080/games`, {
+            const response = await fetch(`http://localhost:8080/games`, {
                 method: 'POST',
             });
             if (!response.ok) {
@@ -269,7 +269,7 @@
     async function deleteGame() {
         console.log(`Deleting game: ${gameId}`);
         try {
-            const response = await fetch(`http://127.0.0.1:8080/games/${gameId}`, {
+            const response = await fetch(`http://localhost:8080/games/${gameId}`, {
                 method: 'DELETE'
             });
             if (!response.ok) {
@@ -283,7 +283,7 @@
 
     async function fetchGameState() {
         try {
-            const response = await fetch(`http://127.0.0.1:8080/games/${gameId}`);
+            const response = await fetch(`http://localhost:8080/games/${gameId}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch game state');
             }
