@@ -204,6 +204,7 @@
     const boardSize = 10;
     let gameState = null;
     let gameId = 'current'; // Default game ID
+    let intervalId = null;
 
     function initializeBoard() {
         for (let y = 0; y < boardSize; y++) {
@@ -326,6 +327,7 @@
         const tank = document.getElementById(tankId);
         tank.remove();
         alert(`Tank ${tankId} is destroyed!`);
+        clearInterval(intervalId);
     }
 
     function updateStones(gameObjects) {
@@ -366,6 +368,8 @@
 
     // Fetch initial game state
     fetchGameState();
+
+    intervalId = setInterval(fetchGameState, 500);
 </script>
 </body>
 </html>
