@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
@@ -97,37 +98,38 @@ public class Game {
     }
 
     private void fireBy(Tank tank) {
-        if (!tank.fire()) {
+        var firedBullet = tank.fire();
+        if (firedBullet == null) {
             return;
         }
-        int x = tank.getX();
-        int y = tank.getY();
-        Direction sightDirection = tank.getSightDirection();
-        switch (sightDirection) {
+        int x = firedBullet.getX();
+        int y = firedBullet.getY();
+        Direction trajectoryDirection = firedBullet.getTrajectoryDirection();
+        switch (trajectoryDirection) {
             case UP -> {
                 for (int i = y - 1; i >= 0; i--) {
-                    if (hitIfAnyAt(x, i)) {
+                    if (hitIfAnyAt(x, i, firedBullet)) {
                         return;
                     }
                 }
             }
             case DOWN -> {
                 for (int i = y + 1; i < battleField.height; i++) {
-                    if (hitIfAnyAt(x, i)) {
+                    if (hitIfAnyAt(x, i, firedBullet)) {
                         return;
                     }
                 }
             }
             case LEFT -> {
                 for (int i = x - 1; i >= 0; i--) {
-                    if (hitIfAnyAt(i, y)) {
+                    if (hitIfAnyAt(i, y, firedBullet)) {
                         return;
                     }
                 }
             }
             case RIGHT -> {
                 for (int i = x + 1; i < battleField.width; i++) {
-                    if (hitIfAnyAt(i, y)) {
+                    if (hitIfAnyAt(i, y, firedBullet)) {
                         return;
                     }
                 }
@@ -148,19 +150,30 @@ public class Game {
         isOver = true;
     }
 
-    private boolean hitIfAnyAt(int x, int i) {
-        GameObject gameObject = battleField.getGameObject(x, i);
+    private boolean hitIfAnyAt(int x, int y, Bullet firedBullet) {
+        GameObject gameObject = battleField.getGameObject(x, y);
         return switch (gameObject) {
             case Stone stone when stone.isDestructible() -> {
-                battleField.convertToGround(gameObject);
+                firedBullet.hit();
+                battleField.convertToGround(firedBullet);
                 yield true;
             }
             case Tank tank -> {
+                firedBullet.hit();
                 destroyTank(tank);
+                battleField.convertToGround(firedBullet);
+                yield true;
+            }
+            case Bullet bullet when bullet != firedBullet -> {
+                firedBullet.hit();
+                battleField.convertToGround(bullet);
+                battleField.convertToGround(firedBullet);
                 yield true;
             }
             case null, default -> {
-                log.debug("No object at position ({}, {})", x, i);
+                battleField.convertToGround(firedBullet);
+                firedBullet.move(x, y);
+                battleField.addGameObject(firedBullet);
                 yield false;
             }
         };
@@ -237,6 +250,16 @@ public class Game {
             }
         }
 
+        void convertToGround(String id) {
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    if (gameObjects[i][j].getId().equals(id)) {
+                        convertToGround(gameObjects[i][j]);
+                    }
+                }
+            }
+        }
+
         void addGameObject(final GameObject gameObject) {
             if (!(gameObjects[gameObject.getX()][gameObject.getY()] instanceof Ground)) {
                 log.warn("({}, {}) Already occupied", gameObject.getX(), gameObject.getY());
@@ -246,6 +269,10 @@ public class Game {
         }
 
         void convertToGround(final GameObject gameObject) {
+            if (gameObjects[gameObject.getX()][gameObject.getY()] instanceof Ground) {
+                log.debug("({}, {}) Already ground", gameObject.getX(), gameObject.getY());
+                return;
+            }
             gameObjects[gameObject.getX()][gameObject.getY()] = new Ground(gameObject.getX(), gameObject.getY());
         }
 
@@ -281,6 +308,7 @@ public class Game {
     @NoArgsConstructor
     @Data
     public static class GameObject {
+        private String id = UUID.randomUUID().toString();
         private int x;
         private int y;
 
@@ -317,6 +345,7 @@ public class Game {
     @Data
     public static class Stone extends GameObject {
         private boolean isDestructible = true;
+
         private Stone(int x, int y) {
             super(x, y);
         }
@@ -324,8 +353,30 @@ public class Game {
 
     @EqualsAndHashCode(callSuper = true)
     @Data
+    public static class Bullet extends GameObject {
+        private boolean shot = false;
+        private boolean hit = false;
+        private Direction trajectoryDirection;
+
+        private Bullet(int x, int y) {
+            super(x, y);
+        }
+
+        public void shoot(Direction direction) {
+            trajectoryDirection = direction;
+            shot = true;
+        }
+
+        public void hit() {
+            hit = true;
+        }
+    }
+
+    @EqualsAndHashCode(callSuper = true)
+    @Data
     public static class Tank extends GameObject {
-        private int numberOfBombs;
+        @JsonIgnore
+        private final ConcurrentLinkedQueue<Bullet> bullets = new ConcurrentLinkedQueue<>();
         private Direction sightDirection;
         private boolean isAlive = true;
         private String id;
@@ -333,8 +384,10 @@ public class Game {
         private Tank(int x, int y, String id) {
             super(x, y);
             this.id = id;
-            this.numberOfBombs = 25;
             this.sightDirection = Direction.RIGHT;
+            for (int i = 0; i < 500; i++) {
+                bullets.add(new Bullet(x, y));
+            }
         }
 
         private void kill() {
@@ -345,13 +398,14 @@ public class Game {
             sightDirection = direction;
         }
 
-        private boolean fire() {
-            if (numberOfBombs <= 0) {
+        private Bullet fire() {
+            if (bullets.isEmpty()) {
                 log.warn("Player {} has no ammunition", id);
-//                return false;
+                return null;
             }
-            numberOfBombs--;
-            return true;
+            var bullet = bullets.poll();
+            bullet.shoot(sightDirection);
+            return bullet;
         }
     }
 }
