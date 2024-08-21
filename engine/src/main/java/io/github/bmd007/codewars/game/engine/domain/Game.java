@@ -9,6 +9,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Instant;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -150,9 +152,9 @@ public class Game {
     }
 
     private boolean hitIfAnyAt(int x, int y, Bullet firedBullet) {
-        log.info("Checking ({}, {}), bullet location", x, y);
         return switch (battleField.getGameObject(x, y)) {
             case Stone stone -> {
+                stone.setOnFire();
                 firedBullet.hit();
                 battleField.convertToGround(stone);
                 battleField.convertToGround(firedBullet);
@@ -230,15 +232,18 @@ public class Game {
         FIRE
     }
 
-    public record BattleField(int width, int height, GameObject[][] gameObjects) {
-        public BattleField {
-            if (width < 0 || height < 0) {
-                throw new IllegalArgumentException("Width and height must be non-negative");
-            }
-        }
+    @Data
+    public class BattleField {
+        private int width;
+        private int height;
+        private GameObject[][] gameObjects;
+        private Set<GameObject> dyingGameObjects;
 
         private BattleField() {
-            this(10, 10, new GameObject[10][10]);
+            width = 10;
+            height = 10;
+            gameObjects = new GameObject[10][10];
+            dyingGameObjects = new HashSet<>();
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
                     gameObjects[i][j] = new Ground(i, j);
@@ -251,6 +256,14 @@ public class Game {
                     }
                 }
             }
+        }
+
+        public Set<GameObject> getDyingGameObjects() {
+            var now = Instant.now();
+            dyingGameObjects =  dyingGameObjects.stream()
+                    .filter(gameObject -> gameObject.getNotVisibleAfter().isAfter(now))
+                    .collect(Collectors.toSet());
+            return dyingGameObjects;
         }
 
         void addGameObject(final GameObject gameObject) {
@@ -266,6 +279,9 @@ public class Game {
                 log.debug("({}, {}) Already ground", gameObject.getX(), gameObject.getY());
                 return;
             }
+            var dyingGameObject = gameObjects[gameObject.getX()][gameObject.getY()];
+            dyingGameObject.setNotVisibleAfter(Instant.now().plusSeconds(4));
+            dyingGameObjects.add(dyingGameObject);
             gameObjects[gameObject.getX()][gameObject.getY()] = new Ground(gameObject.getX(), gameObject.getY());
         }
 
@@ -303,6 +319,8 @@ public class Game {
     public static class GameObject {
         private int x;
         private int y;
+        @JsonIgnore
+        private Instant notVisibleAfter;
 
         private GameObject(int x, int y) {
             if (x < 0 || y < 0) {
@@ -336,8 +354,12 @@ public class Game {
     @EqualsAndHashCode(callSuper = true)
     @Data
     public static class Stone extends GameObject {
+        private boolean isOnFire = false;
         private Stone(int x, int y) {
             super(x, y);
+        }
+        public void setOnFire() {
+            isOnFire = true;
         }
     }
 
