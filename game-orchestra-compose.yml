@@ -38,8 +38,8 @@ services:
       - kafka
     environment:
       GAME_ID: b9f6f06e-cf77-40f6-9e88-68ad70ee5a1b
-      PLAYER_A_ID: A
-      PLAYER_B_ID: A
+      PLAYER_A_ID: tankA
+      PLAYER_B_ID: tankB
       PLAYER_A_COMMANDS_TOPIC: A-commands
       PLAYER_B_COMMANDS_TOPIC: B-commands
       GAME_EVENTS_TOPIC: game-events
@@ -58,8 +58,8 @@ services:
       - engine
     environment:
       GAME_ID: b9f6f06e-cf77-40f6-9e88-68ad70ee5a1b
-      TEAM_ID: "A"
-      PLAYER_ID: A
+      TEAM_ID: "teamA"
+      PLAYER_ID: 'tankA'
       GAME_COMMANDS_TOPIC: A-commands
       GAME_EVENTS_TOPIC: game-events
       GAME_ENGINE_HOST: "http://engine:8080"
@@ -78,10 +78,10 @@ services:
       - engine
     environment:
       GAME_ID: b9f6f06e-cf77-40f6-9e88-68ad70ee5a1b
-      TEAM_ID: "B"
-      PLAYER_ID: B
-      GAME_EVENTS_TOPIC: game-events
+      TEAM_ID: "teamB"
+      PLAYER_ID: 'tankB'
       GAME_COMMANDS_TOPIC: B-commands
+      GAME_EVENTS_TOPIC: game-events
       GAME_ENGINE_HOST: "http://engine:8080"
       SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
       SPRING_PROFILES_ACTIVE: "compose"

@@ -44,7 +44,6 @@ public class GameService {
     }
 
     public void endGame() {
-//        game = null;
         tankAActions.clear();
         tankBActions.clear();
     }
@@ -70,14 +69,15 @@ public class GameService {
     public Game createGame() {
         this.game = roundOne();
         //todo define a good interval
-        Flux.interval(Duration.ofMillis(5))
+        Flux.interval(Duration.ofMillis(50))
                 .filter(_ -> game != null)
                 .subscribe(_ -> {
                     applyActionToTankAIfAny();
                     applyActionToTankBIfAny();
                 });
-        Flux.interval(Duration.ofMillis(5))
+        Flux.interval(Duration.ofMillis(100))
                 .filter(_ -> game != null)
+                .filter(_ -> !game.isOver())
                 .flatMap(_ -> Flux.fromIterable(game.getLatestGameEvents()))
                 .flatMap(this::publishGameEvent)
                 .subscribe();
