@@ -7,6 +7,8 @@ import io.github.bmd007.codewars.game.engine.dto.TankScored;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.With;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
@@ -280,8 +282,7 @@ public class Game {
                 return;
             }
             var dyingGameObject = gameObjects[gameObject.getX()][gameObject.getY()];
-            dyingGameObject.setNotVisibleAfter(Instant.now().plusSeconds(4));
-            dyingGameObjects.add(dyingGameObject);
+            dyingGameObjects.add(dyingGameObject.copyForDeath());
             gameObjects[gameObject.getX()][gameObject.getY()] = new Ground(gameObject.getX(), gameObject.getY());
         }
 
@@ -341,6 +342,13 @@ public class Game {
             setX(newX);
             setY(newY);
         }
+
+        @JsonIgnore
+        public GameObject copyForDeath() {
+            var almostDead = new GameObject(getX(), getY());
+            almostDead.setNotVisibleAfter(Instant.now().plusSeconds(3));
+            return almostDead;
+        }
     }
 
     @EqualsAndHashCode(callSuper = true)
@@ -378,6 +386,13 @@ public class Game {
 
         public void hit() {
             hit = true;
+        }
+
+        @JsonIgnore
+        public Bullet copyForDeath() {
+            var almostDead = new Bullet(getX(), getY(), trajectoryDirection, tankId);
+            almostDead.setNotVisibleAfter(Instant.now().plusSeconds(3));
+            return almostDead;
         }
     }
 

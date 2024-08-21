@@ -55,8 +55,8 @@
         }
 
         .bullet {
-            width: 20px;
-            height: 20px;
+            width: 15px;
+            height: 15px;
             position: absolute;
             background-color: #ff0000; /* Red bullet for team A */
             border-radius: 50%;
@@ -315,7 +315,7 @@
         updateStones(gameState.battleField.gameObjects);
 
         // Update bullets
-        updateBullets(gameState.battleField.gameObjects);
+        updateBullets(gameState.battleField.dyingGameObjects);
     }
 
     function updateTank(tankId, tankState) {
@@ -350,21 +350,19 @@
         });
     }
 
-    function updateBullets(gameObjects) {
+    function updateBullets(dyingGameObjects) {
         // Remove existing bullets
         document.querySelectorAll('.bullet').forEach(bullet => bullet.remove());
 
         // Add new bullets
-        gameObjects.forEach((row, x) => {
-            row.forEach((cell, y) => {
-                if (cell && cell.type === 'Bullet') {
-                    const bulletElement = document.createElement('div');
-                    bulletElement.className = `cell bullet ${cell.teamId === 'teamA' ? 'team-a' : 'team-b'}`;
-                    bulletElement.style.left = `${x * 50}px`;
-                    bulletElement.style.top = `${y * 50}px`;
-                    gameBoard.appendChild(bulletElement);
-                }
-            });
+        dyingGameObjects.forEach(dyingGameObject => {
+            if (dyingGameObject && dyingGameObject.type === 'Bullet') {
+                const bulletElement = document.createElement('div');
+                bulletElement.className = `cell bullet ${dyingGameObject.teamId === 'teamA' ? 'team-a' : 'team-b'}`;
+                bulletElement.style.left = `${dyingGameObject.x * 50}px`;
+                bulletElement.style.top = `${dyingGameObject.y * 50}px`;
+                gameBoard.appendChild(bulletElement);
+            }
         });
     }
 
@@ -389,7 +387,7 @@
     // Fetch initial game state
     fetchGameState();
 
-    intervalId = setInterval(fetchGameState, 500);
+    intervalId = setInterval(fetchGameState, 100);
 </script>
 </body>
 </html>
