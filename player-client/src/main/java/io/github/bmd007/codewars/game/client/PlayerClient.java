@@ -13,6 +13,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 @ConfigurationPropertiesScan
 @Slf4j
@@ -32,22 +34,17 @@ public class PlayerClient {
     @EventListener(ApplicationReadyEvent.class)
     public void start() {
         log.info("Starting game client with properties: {}", gameClientProperties);
-        Flux.fromIterable(
-                List.of(
-                        new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.LOOK_DOWN),
-                        new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.FIRE),
-                        new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.LOOK_RIGHT),
-                        new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.FIRE),
-                        new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.LOOK_UP),
-                        new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.FIRE),
-                        new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.LOOK_LEFT),
-                        new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.FIRE),
-                        new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.LOOK_DOWN),
-                        new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.FIRE)
-                )
-        )
-        .delayElements(Duration.ofMillis(400))
-        .repeat(300)
+        Random random = new Random();
+        List<GameCommand> commands = List.of(
+                new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.FIRE),
+                new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.MOVE_LEFT),
+                new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.MOVE_RIGHT),
+                new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.MOVE_UP),
+                new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.MOVE_DOWN)
+        );
+        Flux.interval(Duration.ofMillis(500))
+        .map(_ -> random.nextInt(commands.size()))
+        .map(commands::get)
         .flatMap(data ->Mono.fromFuture(kafkaTemplate.send(gameClientProperties.gameCommandsTopic, data)))
         .subscribe(System.out::println);
     }

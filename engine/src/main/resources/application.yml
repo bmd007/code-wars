@@ -65,13 +65,12 @@ kafka:
 
 game:
   engine:
-    game-events-topic: ${GAME_EVENTS_TOPIC}
+    gameEventsTopic: ${GAME_EVENTS_TOPIC}
     player-a-commands-topic: ${PLAYER_A_COMMANDS_TOPIC}
     player-b-commands-topic: ${PLAYER_B_COMMANDS_TOPIC}
-    game-id: ${GAME_ID}
-    player-a-id: ${PLAYER_A_ID}
-    player-b-id: ${PLAYER_B_ID}
-
+    gameId: ${GAME_ID}
+    playerBId: ${PLAYER_B_ID}
+    playerAId: ${PLAYER_A_ID}
 
 ---
 spring:

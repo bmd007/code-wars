@@ -58,10 +58,10 @@ game:
   client:
     game-commands-topic: ${GAME_COMMANDS_TOPIC}
     game-events-topic: ${GAME_EVENTS_TOPIC}
-    game-id: ${GAME_ID}
-    player-id: ${PLAYER_ID}
+    gameId: ${GAME_ID}
+    playerId: ${PLAYER_ID}
     game-engine-host: ${GAME_ENGINE_HOST}
-    team-id: ${TEAM_ID}
+    teamId: ${TEAM_ID}
 
 ---
 spring:

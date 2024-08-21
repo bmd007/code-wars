@@ -348,7 +348,7 @@ public class Game {
         private boolean fire() {
             if (numberOfBombs <= 0) {
                 log.warn("Player {} has no ammunition", id);
-                return false;
+//                return false;
             }
             numberOfBombs--;
             return true;

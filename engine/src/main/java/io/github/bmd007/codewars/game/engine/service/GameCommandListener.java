@@ -57,7 +57,7 @@ public class GameCommandListener {
                         log.info("Received command for tank A: {}", command);
                         commandRepository.saveGameCommand(command);
                         if (!command.tankId().equals(gameEngineProperties.getPlayerAId())) {
-                            log.warn("Received command for wrong tank: {}", command);
+                            log.warn("Received command for wrong tank: topic {}, expected tankId tankA, command {}", gameEngineProperties.getPlayerAId(), command);
                             return;
                         }
                         gameService.queueActionForTankA(command.action());
@@ -77,7 +77,7 @@ public class GameCommandListener {
                         log.info("Received command for tank B: {}", command);
                         commandRepository.saveGameCommand(command);
                         if (!command.tankId().equals(gameEngineProperties.getPlayerBId())) {
-                            log.warn("Received command for wrong tank: {}", command);
+                            log.warn("Received command for wrong tank: topic {}, expected tankId tankB, command {}", gameEngineProperties.getPlayerBId(), command);
                             return;
                         }
                         gameService.queueActionForTankB(command.action());

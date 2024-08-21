@@ -55,3 +55,4 @@ In order to register for the tournament, add a comment to https://github.com/bmd
  - sample player [player-client](player-client)
  - [leaderboard](leaderboard) app
  - game visualizer
+ - map maker
