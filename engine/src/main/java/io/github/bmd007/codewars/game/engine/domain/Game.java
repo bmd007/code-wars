@@ -319,7 +319,7 @@ public class Game {
 
     @NoArgsConstructor
     @Data
-    public static class GameObject {
+    public static class GameObject implements Comparable<GameObject> {
         private int x;
         private int y;
         @JsonIgnore
@@ -350,6 +350,17 @@ public class Game {
             var almostDead = new GameObject(getX(), getY());
             almostDead.setNotVisibleAfter(Instant.now().plusSeconds(3));
             return almostDead;
+        }
+
+        @Override
+        public int compareTo(GameObject o) {
+            if (notVisibleAfter == null) {
+                return 1;
+            }
+            if (o.notVisibleAfter == null) {
+                return -1;
+            }
+            return notVisibleAfter.compareTo(o.notVisibleAfter);
         }
     }
 
