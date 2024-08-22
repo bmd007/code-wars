@@ -7,12 +7,9 @@ import io.github.bmd007.codewars.game.engine.dto.TankScored;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.With;
-import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -261,9 +258,8 @@ public class Game {
         }
 
         public Set<GameObject> getDyingGameObjects() {
-            var now = Instant.now();
-            var dyingObjects =  dyingGameObjects.stream()
-                    .filter(gameObject -> gameObject.getNotVisibleAfter().isAfter(now))
+            var dyingObjects = dyingGameObjects.stream()
+                    .filter(gameObject -> gameObject.getNotVisibleAfter().isAfter(Instant.now()))
                     .collect(Collectors.toSet());
             dyingGameObjects.clear();
             dyingGameObjects.addAll(dyingObjects);
@@ -348,7 +344,7 @@ public class Game {
         @JsonIgnore
         public GameObject copyForDeath() {
             var almostDead = new GameObject(getX(), getY());
-            almostDead.setNotVisibleAfter(Instant.now().plusSeconds(3));
+            almostDead.setNotVisibleAfter(Instant.now().plusSeconds(2));
             return almostDead;
         }
 
@@ -376,9 +372,11 @@ public class Game {
     @Data
     public static class Stone extends GameObject {
         private boolean isOnFire = false;
+
         private Stone(int x, int y) {
             super(x, y);
         }
+
         public void setOnFire() {
             isOnFire = true;
         }
