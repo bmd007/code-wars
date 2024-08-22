@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -236,16 +237,15 @@ public class Game {
 
     @Data
     public class BattleField {
-        private int width;
-        private int height;
+        private final int width;
+        private final int height;
         private GameObject[][] gameObjects;
-        private Set<GameObject> dyingGameObjects;
+        private final ConcurrentSkipListSet<GameObject> dyingGameObjects = new ConcurrentSkipListSet<>();
 
         private BattleField() {
             width = 10;
             height = 10;
             gameObjects = new GameObject[10][10];
-            dyingGameObjects = new HashSet<>();
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
                     gameObjects[i][j] = new Ground(i, j);
@@ -262,10 +262,12 @@ public class Game {
 
         public Set<GameObject> getDyingGameObjects() {
             var now = Instant.now();
-            dyingGameObjects =  dyingGameObjects.stream()
+            var dyingObjects =  dyingGameObjects.stream()
                     .filter(gameObject -> gameObject.getNotVisibleAfter().isAfter(now))
                     .collect(Collectors.toSet());
-            return dyingGameObjects;
+            dyingGameObjects.clear();
+            dyingGameObjects.addAll(dyingObjects);
+            return dyingObjects;
         }
 
         void addGameObject(final GameObject gameObject) {
