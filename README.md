@@ -38,7 +38,7 @@ One hit is enough to destroy a wall.
 
 ### Running your code against itself:
     1- In the player-client/build.gradle file, change bootBuildImage.imageName to your desirable docker image name
-    2- Replace `bmd007/codewars-player` in the [game-orchestra-compose.yml](game-orchestra-compose.yml) file with your docker image name (corresponding to the previous step)
+    2- Replace `bmd007/codewars-player` in the game-orchestra-compose.yml file with your docker image name (corresponding to the previous step)
     3- Finish the implementation of player-client
     4- Run `./gradlew bootBuildImage` in the engine directory
     4- Run `./gradlew bootBuildImage` in the player-client directory
