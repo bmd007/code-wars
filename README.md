@@ -33,7 +33,7 @@ The game is a 2D grid where each cell can be empty, a wall, or a tank (player).
 There are only two tanks in the game and destruction of one of the tanks ends the game.
 One hit is enough to destroy a tank.
 The tanks can move in 4 directions (up, down, left, right) and can shoot in 4 directions.
-The walls van be destroyed by shooting at them as well. 
+The walls can be destroyed by shooting at them as well. 
 One hit is enough to destroy a wall.
 
 ### Running your code against itself:
