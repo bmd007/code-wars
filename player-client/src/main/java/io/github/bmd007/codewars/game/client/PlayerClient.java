@@ -30,6 +30,9 @@ public class PlayerClient {
     @Autowired
     private KafkaTemplate<String, GameCommand> kafkaTemplate;
 
+    @Autowired
+    private GameEngineClient gameEngineClient;
+
     @EventListener(ApplicationReadyEvent.class)
     public void start() {
         log.info("Starting game client with properties: {}", gameClientProperties);
@@ -44,8 +47,11 @@ public class PlayerClient {
         Flux.interval(Duration.ofMillis(500))
         .map(_ -> random.nextInt(commands.size()))
         .map(commands::get)
-        .flatMap(data ->Mono.fromFuture(kafkaTemplate.send(gameClientProperties.gameCommandsTopic, data)))
-        .subscribe(System.out::println);
+        .flatMap(data ->Mono.fromFuture(kafkaTemplate.send(gameClientProperties.gameCommandsTopic, data)));
+//        .subscribe(System.out::println);
+
+        gameEngineClient.getGameState()
+                .subscribe(gameState -> log.info("Received game state: {}", gameState));
     }
 
     @EventListener(org.springframework.context.event.ContextClosedEvent.class)
