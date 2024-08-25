@@ -47,10 +47,12 @@ public class PlayerClient {
         Flux.interval(Duration.ofMillis(500))
         .map(_ -> random.nextInt(commands.size()))
         .map(commands::get)
-        .flatMap(data ->Mono.fromFuture(kafkaTemplate.send(gameClientProperties.gameCommandsTopic, data)));
-//        .subscribe(System.out::println);
+        .flatMap(data ->Mono.fromFuture(kafkaTemplate.send(gameClientProperties.gameCommandsTopic, data)))
+        .subscribe(System.out::println);
 
-        gameEngineClient.getGameState()
+        Flux.interval(Duration.ofMillis(500))
+                .flatMap(_ -> gameEngineClient.getGameState())
+                .onErrorContinue((throwable, o) -> log.error("Error getting game state", throwable))
                 .subscribe(gameState -> log.info("Received game state: {}", gameState));
     }
 
