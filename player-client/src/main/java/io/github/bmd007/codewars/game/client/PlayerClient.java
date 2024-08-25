@@ -55,9 +55,4 @@ public class PlayerClient {
                 .onErrorContinue((throwable, o) -> log.error("Error getting game state", throwable))
                 .subscribe(gameState -> log.info("Received game state: {}", gameState));
     }
-
-    @EventListener(org.springframework.context.event.ContextClosedEvent.class)
-    public void stop() {
-
-    }
 }
