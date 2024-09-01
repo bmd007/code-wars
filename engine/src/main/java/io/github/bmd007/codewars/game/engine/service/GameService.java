@@ -69,13 +69,13 @@ public class GameService {
     public Game createGame() {
         this.game = roundOne();
         //todo define a good interval
-        Flux.interval(Duration.ofMillis(50))
+        Flux.interval(Duration.ofMillis(200))
                 .filter(_ -> game != null)
                 .subscribe(_ -> {
                     applyActionToTankAIfAny();
                     applyActionToTankBIfAny();
                 });
-        Flux.interval(Duration.ofMillis(100))
+        Flux.interval(Duration.ofMillis(200))
                 .filter(_ -> game != null)
                 .filter(_ -> !game.isOver())
                 .flatMap(_ -> Flux.fromIterable(game.getLatestGameEvents()))

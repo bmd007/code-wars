@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Data
@@ -72,11 +73,71 @@ public class GameState {
 
     public Action decideNextAction() {
         if (isEnemyInLineOfLight()) {
+            log.info("Enemy in line of sight, shooting");
             return Action.FIRE;
         }
         return isInEnemiesLineOfSight()
-                .map(this::flyAwayOrShoot)
-                .orElse(Action.FIRE);
+                .map(this::moveAwayOrShoot)
+                .orElseGet(this::getCloserToEnemyOrShoot);
+    }
+
+    private Action getCloserToEnemyOrShoot() {
+        var currentX = getMyTank().getX();
+        var currentY = getMyTank().getY();
+        var currentDirection = getMyTank().getSightDirection();
+        if (getMyTank().getY() > getEnemyTank().getY()) {
+            if (getMyTank().getX() > getEnemyTank().getX()) {
+                if (getBattleField().getGameObjects()[currentX][currentY - 1].getType().equals(Ground.class.getSimpleName())) {
+                    return Action.MOVE_UP;
+                }
+                if (getBattleField().getGameObjects()[currentX - 1][currentY].getType().equals(Ground.class.getSimpleName())) {
+                    return Action.MOVE_LEFT;
+                }
+                if (currentDirection == Direction.UP || currentDirection == Direction.LEFT) {
+                    return Action.FIRE;
+                }
+                return Set.of(Action.LOOK_LEFT, Action.LOOK_UP).stream().findAny().get();
+            }
+            if (getMyTank().getX() < getEnemyTank().getX()) {
+                if (getBattleField().getGameObjects()[currentX][currentY - 1].getType().equals(Ground.class.getSimpleName())) {
+                    return Action.MOVE_UP;
+                }
+                if (getBattleField().getGameObjects()[currentX + 1][currentY].getType().equals(Ground.class.getSimpleName())) {
+                    return Action.MOVE_RIGHT;
+                }
+                if (currentDirection == Direction.UP || currentDirection == Direction.RIGHT) {
+                    return Action.FIRE;
+                }
+                return Set.of(Action.LOOK_RIGHT, Action.LOOK_UP).stream().findAny().get();
+            }
+        }
+        if (getMyTank().getY() < getEnemyTank().getY()) {
+            if (getMyTank().getX() > getEnemyTank().getX()) {
+                if (getBattleField().getGameObjects()[currentX][currentY + 1].getType().equals(Ground.class.getSimpleName())) {
+                    return Action.MOVE_DOWN;
+                }
+                if (getBattleField().getGameObjects()[currentX - 1][currentY].getType().equals(Ground.class.getSimpleName())) {
+                    return Action.MOVE_LEFT;
+                }
+                if (currentDirection == Direction.DOWN || currentDirection == Direction.LEFT) {
+                    return Action.FIRE;
+                }
+                return Set.of(Action.LOOK_LEFT, Action.LOOK_DOWN).stream().findAny().get();
+            }
+            if (getMyTank().getX() < getEnemyTank().getX()) {
+                if (getBattleField().getGameObjects()[currentX][currentY + 1].getType().equals(Ground.class.getSimpleName())) {
+                    return Action.MOVE_DOWN;
+                }
+                if (getBattleField().getGameObjects()[currentX + 1][currentY].getType().equals(Ground.class.getSimpleName())) {
+                    return Action.MOVE_RIGHT;
+                }
+                if (currentDirection == Direction.DOWN || currentDirection == Direction.RIGHT) {
+                    return Action.FIRE;
+                }
+                return Set.of(Action.LOOK_RIGHT, Action.LOOK_DOWN).stream().findAny().get();
+            }
+        }
+        return Action.FIRE;
     }
 
     private Tank getMyTank() {
@@ -106,33 +167,64 @@ public class GameState {
                 .findFirst();
     }
 
-    private Action flyAwayOrShoot(Direction enemyDirection) {
+    private Action moveAwayOrShoot(Direction enemiesLineOfSight) {
         if (getMyTank().getY() > 0) {
             var gameObject = getBattleField().getGameObjects()[getMyTank().getX()][getMyTank().getY() - 1];
-            if (gameObject instanceof Ground) {
+            if (gameObject.getType().equals(Ground.class.getSimpleName())) {
                 return Action.MOVE_UP;
+            } else {
+                if (isInLineOfSight(getMyTank(), getEnemyTank(), Direction.UP)) {
+                    if (getMyTank().getSightDirection() == Direction.UP) {
+                        return Action.FIRE;
+                    } else {
+                        return Action.MOVE_UP;
+                    }
+                }
             }
         }
         if (getMyTank().getY() < getBattleField().getHeight() - 1) {
             var gameObject = getBattleField().getGameObjects()[getMyTank().getX()][getMyTank().getY() + 1];
-            if (gameObject instanceof Ground) {
+            if (gameObject.getType().equals(Ground.class.getSimpleName())) {
                 return Action.MOVE_DOWN;
+            } else {
+                if (isInLineOfSight(getMyTank(), getEnemyTank(), Direction.DOWN)) {
+                    if (getMyTank().getSightDirection() == Direction.DOWN) {
+                        return Action.FIRE;
+                    } else {
+                        return Action.MOVE_DOWN;
+                    }
+                }
             }
         }
         if (getMyTank().getX() > 0) {
             var gameObject = getBattleField().getGameObjects()[getMyTank().getX() - 1][getMyTank().getY()];
-            if (gameObject instanceof Ground) {
+            if (gameObject.getType().equals(Ground.class.getSimpleName())) {
                 return Action.MOVE_LEFT;
+            } else {
+                if (isInLineOfSight(getMyTank(), getEnemyTank(), Direction.LEFT)) {
+                    if (getMyTank().getSightDirection() == Direction.LEFT) {
+                        return Action.FIRE;
+                    } else {
+                        return Action.MOVE_LEFT;
+                    }
+                }
             }
         }
         if (getMyTank().getX() < getBattleField().getWidth() - 1) {
             var gameObject = getBattleField().getGameObjects()[getMyTank().getX() + 1][getMyTank().getY()];
-            if (gameObject instanceof Ground) {
+            if (gameObject.getType().equals(Ground.class.getSimpleName())) {
                 return Action.MOVE_RIGHT;
+            } else {
+                if (isInLineOfSight(getMyTank(), getEnemyTank(), Direction.RIGHT)) {
+                    if (getMyTank().getSightDirection() == Direction.RIGHT) {
+                        return Action.FIRE;
+                    } else {
+                        return Action.MOVE_RIGHT;
+                    }
+                }
             }
         }
-        // can't go anywhere, but at least face the enemy
-        return switch (enemyDirection) {
+        return switch (enemiesLineOfSight) {
             case UP -> Action.MOVE_DOWN;
             case DOWN -> Action.MOVE_UP;
             case LEFT -> Action.MOVE_RIGHT;

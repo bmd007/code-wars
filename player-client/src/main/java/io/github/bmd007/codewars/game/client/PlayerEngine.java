@@ -11,6 +11,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 
@@ -33,7 +34,8 @@ public class PlayerEngine {
     @EventListener(ApplicationReadyEvent.class)
     private void play() {
         var baseCommand = new GameCommand(gameClientProperties.getGameId(), gameClientProperties.getPlayerId(), gameClientProperties.getTeamId(), null);
-        Flux.interval(Duration.ofMillis(500))
+        Flux.interval(Duration.ofSeconds(1))
+                .subscribeOn(Schedulers.immediate())
                 .flatMap(_ -> gameEngineClient.getGameState())
                 .map(gameState -> {
                     gameState.setMyTankId(gameClientProperties.getPlayerId());
@@ -41,7 +43,7 @@ public class PlayerEngine {
                 })
                 .map(GameState::decideNextAction)
                 .map(baseCommand::withAction)
-                .flatMap(data -> Mono.fromFuture(kafkaTemplate.send(gameClientProperties.getGameCommandsTopic(), data)))
+                .delayUntil(data -> Mono.fromFuture(kafkaTemplate.send(gameClientProperties.getGameCommandsTopic(), data)))
                 .switchIfEmpty(Mono.error(new Throwable("Empty")))
                 .onErrorContinue((throwable, _) -> log.error("Error getting/sending game state", throwable))
                 .subscribe();
