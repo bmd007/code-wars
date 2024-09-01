@@ -1,5 +1,9 @@
 package io.github.bmd007.codewars.game.client;
 
+import io.github.bmd007.codewars.game.client.client.GameEngineClient;
+import io.github.bmd007.codewars.game.client.dto.Action;
+import io.github.bmd007.codewars.game.client.dto.GameCommand;
+import io.github.bmd007.codewars.game.client.properties.GameClientProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -38,16 +42,16 @@ public class PlayerClient {
         log.info("Starting game client with properties: {}", gameClientProperties);
         Random random = new Random();
         List<GameCommand> commands = List.of(
-                new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.FIRE),
-                new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.MOVE_LEFT),
-                new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.MOVE_RIGHT),
-                new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.MOVE_UP),
-                new GameCommand(gameClientProperties.gameId, gameClientProperties.playerId, gameClientProperties.teamId, GameCommand.Action.MOVE_DOWN)
+                new GameCommand(gameClientProperties.getGameId(), gameClientProperties.getPlayerId(), gameClientProperties.getTeamId(), Action.FIRE),
+                new GameCommand(gameClientProperties.getGameId(), gameClientProperties.getPlayerId(), gameClientProperties.getTeamId(), Action.MOVE_LEFT),
+                new GameCommand(gameClientProperties.getGameId(), gameClientProperties.getPlayerId(), gameClientProperties.getTeamId(), Action.MOVE_RIGHT),
+                new GameCommand(gameClientProperties.getGameId(), gameClientProperties.getPlayerId(), gameClientProperties.getTeamId(), Action.MOVE_UP),
+                new GameCommand(gameClientProperties.getGameId(), gameClientProperties.getPlayerId(), gameClientProperties.getTeamId(), Action.MOVE_DOWN)
         );
         Flux.interval(Duration.ofMillis(500))
         .map(_ -> random.nextInt(commands.size()))
         .map(commands::get)
-        .flatMap(data ->Mono.fromFuture(kafkaTemplate.send(gameClientProperties.gameCommandsTopic, data)))
+        .flatMap(data ->Mono.fromFuture(kafkaTemplate.send(gameClientProperties.getGameCommandsTopic(), data)))
         .subscribe(System.out::println);
 
         Flux.interval(Duration.ofMillis(500))

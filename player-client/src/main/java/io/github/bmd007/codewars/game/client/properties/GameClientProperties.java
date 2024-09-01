@@ -1,4 +1,4 @@
-package io.github.bmd007.codewars.game.client;
+package io.github.bmd007.codewars.game.client.properties;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -14,10 +14,10 @@ import java.net.URI;
 @Builder
 @ToString
 public class GameClientProperties {
-    String teamId;
-    String gameId;
-    String playerId;
-    String gameEventsTopic;
-    String gameCommandsTopic;
-    URI gameEngineHost;
+    private String teamId;
+    private String gameId;
+    private String playerId;
+    private String gameEventsTopic;
+    private String gameCommandsTopic;
+    private URI gameEngineHost;
 }
