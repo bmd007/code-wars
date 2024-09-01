@@ -1,7 +1,7 @@
 package io.github.bmd007.codewars.game.client;
 
 import io.github.bmd007.codewars.game.client.client.GameEngineClient;
-import io.github.bmd007.codewars.game.client.domain.GameState;
+import io.github.bmd007.codewars.game.client.domain.GameStateAndLogic;
 import io.github.bmd007.codewars.game.client.dto.GameCommand;
 import io.github.bmd007.codewars.game.client.properties.GameClientProperties;
 import lombok.extern.slf4j.Slf4j;
@@ -37,11 +37,11 @@ public class PlayerEngine {
         Flux.interval(Duration.ofSeconds(1))
                 .subscribeOn(Schedulers.immediate())
                 .flatMap(_ -> gameEngineClient.getGameState())
-                .map(gameState -> {
-                    gameState.setMyTankId(gameClientProperties.getPlayerId());
-                    return gameState;
+                .map(gameStateAndLogic -> {
+                    gameStateAndLogic.setMyTankId(gameClientProperties.getPlayerId());
+                    return gameStateAndLogic;
                 })
-                .map(GameState::decideNextAction)
+                .map(GameStateAndLogic::decideNextAction)
                 .map(baseCommand::withAction)
                 .delayUntil(data -> Mono.fromFuture(kafkaTemplate.send(gameClientProperties.getGameCommandsTopic(), data)))
                 .switchIfEmpty(Mono.error(new Throwable("Empty")))

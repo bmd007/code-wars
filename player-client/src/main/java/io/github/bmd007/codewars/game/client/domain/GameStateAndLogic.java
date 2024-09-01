@@ -13,7 +13,7 @@ import java.util.Set;
 
 @Slf4j
 @Data
-public class GameState {
+public class GameStateAndLogic {
 
     private String gameId;
     private BattleField battleField;

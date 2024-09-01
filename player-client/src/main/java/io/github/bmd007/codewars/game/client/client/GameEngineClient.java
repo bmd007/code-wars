@@ -1,6 +1,6 @@
 package io.github.bmd007.codewars.game.client.client;
 
-import io.github.bmd007.codewars.game.client.domain.GameState;
+import io.github.bmd007.codewars.game.client.domain.GameStateAndLogic;
 import io.github.bmd007.codewars.game.client.properties.GameClientProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -17,10 +17,10 @@ public class GameEngineClient {
                 .build();
     }
 
-    public Mono<GameState> getGameState() {
+    public Mono<GameStateAndLogic> getGameState() {
         return gameEngineWebClient.get()
                 .uri("/games/current")
                 .retrieve()
-                .bodyToMono(GameState.class);
+                .bodyToMono(GameStateAndLogic.class);
     }
 }
