@@ -7,9 +7,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.swing.text.Position;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Optional;
 
 @Slf4j
 @Data
@@ -72,86 +71,72 @@ public class GameState {
     }
 
     public Action decideNextAction() {
-        if (canShootEnemy()) {
+        if (isEnemyInLineOfLight()) {
             return Action.FIRE;
-        } else if (isInDanger()) {
-            return findSafeMove();
-        } else {
-            return moveStrategically();
         }
+        return isInEnemiesLineOfSight()
+                .map(this::flyAwayOrShoot)
+                .orElse(Action.FIRE);
     }
 
-    private Tank myTank() {
+    private Tank getMyTank() {
         return tankA.getId().equals(myTankId) ? tankA : tankB;
     }
 
-    private Tank enemyTank() {
+    private Tank getEnemyTank() {
         return tankA.getId().equals(myTankId) ? tankB : tankA;
     }
 
-    private boolean canShootEnemy() {
-        return isInLineOfSight(myTank(), enemyTank(), myTank().getSightDirection());
+    private boolean isEnemyInLineOfLight() {
+        return isInLineOfSight(getMyTank(), getEnemyTank(), getMyTank().getSightDirection());
     }
 
     private boolean isInLineOfSight(Tank viewer, Tank viewee, Direction sightDirection) {
-        return false;
+        return switch (sightDirection) {
+            case UP -> viewer.getY() > viewee.getY() && viewer.getX() == viewee.getX();
+            case DOWN -> viewer.getY() < viewee.getY() && viewer.getX() == viewee.getX();
+            case LEFT -> viewer.getX() > viewee.getX() && viewer.getY() == viewee.getY();
+            case RIGHT -> viewer.getX() < viewee.getX() && viewer.getY() == viewee.getY();
+        };
     }
 
-    private boolean isInDanger() {
-        // Check if we're in any potential line of fire from the enemy
-        for (Direction dir : Direction.values()) {
-            if (isInLineOfSight(enemyTank, myTank, dir)) {
-                return true;
+    private Optional<Direction> isInEnemiesLineOfSight() {
+        return Arrays.stream(Direction.values())
+                .filter(dir -> isInLineOfSight(getEnemyTank(), getMyTank(), dir))
+                .findFirst();
+    }
+
+    private Action flyAwayOrShoot(Direction enemyDirection) {
+        if (getMyTank().getY() > 0) {
+            var gameObject = getBattleField().getGameObjects()[getMyTank().getX()][getMyTank().getY() - 1];
+            if (gameObject instanceof Ground) {
+                return Action.MOVE_UP;
             }
         }
-        return false;
-    }
-
-    private Action findSafeMove() {
-        List<Position> safeMoves = getPossibleMoves(myTank).stream()
-                .filter(move -> !isInDanger(move))
-                .collect(Collectors.toList());
-
-        return safeMoves.isEmpty() ? moveRandomly() : moveTowards(safeMoves.get(0));
-    }
-
-    private Action moveStrategically() {
-        List<Position> goodPositions = findGoodShootingPositions();
-        return goodPositions.isEmpty() ? moveTowards(enemyTank) : moveTowards(goodPositions.get(0));
-    }
-
-    private List<Position> findGoodShootingPositions() {
-        return getAllAdjacentPositions(myTank).stream()
-                .filter(this::canShootEnemyFrom)
-                .filter(pos -> !isInDanger(pos))
-                .collect(Collectors.toList());
-    }
-
-    private boolean canShootEnemyFrom(Position pos) {
-        for (Direction dir : Direction.values()) {
-            if (isInLineOfSight(pos, enemyTank, dir)) {
-                return true;
+        if (getMyTank().getY() < getBattleField().getHeight() - 1) {
+            var gameObject = getBattleField().getGameObjects()[getMyTank().getX()][getMyTank().getY() + 1];
+            if (gameObject instanceof Ground) {
+                return Action.MOVE_DOWN;
             }
         }
-        return false;
-    }
-
-    private boolean isInDanger(Position pos) {
-        for (Direction dir : Direction.values()) {
-            if (isInLineOfSight(enemyTank, pos, dir)) {
-                return true;
+        if (getMyTank().getX() > 0) {
+            var gameObject = getBattleField().getGameObjects()[getMyTank().getX() - 1][getMyTank().getY()];
+            if (gameObject instanceof Ground) {
+                return Action.MOVE_LEFT;
             }
         }
-        return false;
+        if (getMyTank().getX() < getBattleField().getWidth() - 1) {
+            var gameObject = getBattleField().getGameObjects()[getMyTank().getX() + 1][getMyTank().getY()];
+            if (gameObject instanceof Ground) {
+                return Action.MOVE_RIGHT;
+            }
+        }
+        // can't go anywhere, but at least face the enemy
+        return switch (enemyDirection) {
+            case UP -> Action.MOVE_DOWN;
+            case DOWN -> Action.MOVE_UP;
+            case LEFT -> Action.MOVE_RIGHT;
+            case RIGHT -> Action.MOVE_LEFT;
+        };
     }
-
-    private Action moveTowards(Position target) {
-        // Use BFS to find the best move towards the target
-        // Return the appropriate MOVE_X action
-    }
-
-    private Action moveRandomly() {
-        // Choose a random safe direction to move
-    }
-
 }
