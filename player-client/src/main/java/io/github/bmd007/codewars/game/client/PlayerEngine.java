@@ -41,6 +41,7 @@ public class PlayerEngine {
                     gameStateAndLogic.setMyTankId(gameClientProperties.getPlayerId());
                     return gameStateAndLogic;
                 })
+                .filter(GameStateAndLogic::isNotOver)
                 .map(GameStateAndLogic::decideNextAction)
                 .map(baseCommand::withAction)
                 .delayUntil(data -> Mono.fromFuture(kafkaTemplate.send(gameClientProperties.getGameCommandsTopic(), data)))

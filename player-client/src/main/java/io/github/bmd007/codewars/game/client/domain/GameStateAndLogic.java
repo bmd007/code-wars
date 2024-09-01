@@ -22,6 +22,10 @@ public class GameStateAndLogic {
     private boolean isOver = false;
     private String myTankId;
 
+    public boolean isNotOver() {
+        return !isOver;
+    }
+
     public enum Direction {
         UP,
         DOWN,
@@ -75,6 +79,16 @@ public class GameStateAndLogic {
         if (isEnemyInLineOfLight()) {
             log.info("Enemy in line of sight, shooting");
             return Action.FIRE;
+        }
+        for (Direction direction : Direction.values()) {
+            if (isInLineOfSight(getMyTank(), getEnemyTank(), direction)) {
+                return switch (direction) {
+                    case UP -> Action.LOOK_UP;
+                    case DOWN -> Action.LOOK_DOWN;
+                    case LEFT -> Action.LOOK_LEFT;
+                    case RIGHT -> Action.LOOK_RIGHT;
+                };
+            }
         }
         return isInEnemiesLineOfSight()
                 .map(this::moveAwayOrShoot)
