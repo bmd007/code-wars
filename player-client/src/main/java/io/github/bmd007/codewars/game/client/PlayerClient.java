@@ -8,9 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
-import org.springframework.context.event.EventListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -37,9 +35,8 @@ public class PlayerClient {
     @Autowired
     private GameEngineClient gameEngineClient;
 
-    @EventListener(ApplicationReadyEvent.class)
+//    @EventListener(ApplicationReadyEvent.class)
     public void start() {
-        log.info("Starting game client with properties: {}", gameClientProperties);
         Random random = new Random();
         List<GameCommand> commands = List.of(
                 new GameCommand(gameClientProperties.getGameId(), gameClientProperties.getPlayerId(), gameClientProperties.getTeamId(), Action.FIRE),
@@ -53,7 +50,6 @@ public class PlayerClient {
         .map(commands::get)
         .flatMap(data ->Mono.fromFuture(kafkaTemplate.send(gameClientProperties.getGameCommandsTopic(), data)))
         .subscribe(System.out::println);
-
         Flux.interval(Duration.ofMillis(500))
                 .flatMap(_ -> gameEngineClient.getGameState())
                 .onErrorContinue((throwable, _) -> log.error("Error getting game state", throwable))

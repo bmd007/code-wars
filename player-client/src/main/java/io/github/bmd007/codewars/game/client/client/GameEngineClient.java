@@ -1,6 +1,6 @@
 package io.github.bmd007.codewars.game.client.client;
 
-import io.github.bmd007.codewars.game.client.dto.GameState;
+import io.github.bmd007.codewars.game.client.domain.GameState;
 import io.github.bmd007.codewars.game.client.properties.GameClientProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
