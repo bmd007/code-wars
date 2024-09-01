@@ -344,7 +344,7 @@ public class Game {
         @JsonIgnore
         public GameObject copyForDeath() {
             var almostDead = new GameObject(getX(), getY());
-            almostDead.setNotVisibleAfter(Instant.now().plusSeconds(2));
+            almostDead.setNotVisibleAfter(Instant.now().plusMillis(400));
             return almostDead;
         }
 
