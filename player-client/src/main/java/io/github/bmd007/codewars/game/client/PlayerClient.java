@@ -56,7 +56,7 @@ public class PlayerClient {
 
         Flux.interval(Duration.ofMillis(500))
                 .flatMap(_ -> gameEngineClient.getGameState())
-                .onErrorContinue((throwable, o) -> log.error("Error getting game state", throwable))
+                .onErrorContinue((throwable, _) -> log.error("Error getting game state", throwable))
                 .subscribe(gameState -> log.info("Received game state: {}", gameState));
     }
 }
