@@ -240,9 +240,9 @@ public class Game {
         private final ConcurrentSkipListSet<GameObject> dyingGameObjects = new ConcurrentSkipListSet<>();
 
         private BattleField() {
-            width = 10;
-            height = 10;
-            gameObjects = new GameObject[10][10];
+            width = 15;
+            height = 15;
+            gameObjects = new GameObject[width][height];
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
                     gameObjects[i][j] = new Ground(i, j);
