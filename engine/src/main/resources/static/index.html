@@ -169,13 +169,13 @@
 <body>
 <div id="game-container">
     <div class="controls">
-        <h3>Tank A Controls</h3>
+        <h3 id="tankAControlsTitle">`${tankAName}` Controls</h3>
         <div class="joystick">
-            <button class="joystick-button joystick-up" onclick="sendCommand('tankA', 'MOVE_UP')">↑</button>
-            <button class="joystick-button joystick-right" onclick="sendCommand('tankA', 'MOVE_RIGHT')">→</button>
-            <button class="joystick-button joystick-down" onclick="sendCommand('tankA', 'MOVE_DOWN')">↓</button>
-            <button class="joystick-button joystick-left" onclick="sendCommand('tankA', 'MOVE_LEFT')">←</button>
-            <button class="joystick-button joystick-center" onclick="sendCommand('tankA', 'FIRE')">F</button>
+            <button class="joystick-button joystick-up" onclick="sendCommand(tankAName, 'MOVE_UP')">↑</button>
+            <button class="joystick-button joystick-right" onclick="sendCommand(tankAName, 'MOVE_RIGHT')">→</button>
+            <button class="joystick-button joystick-down" onclick="sendCommand(tankAName, 'MOVE_DOWN')">↓</button>
+            <button class="joystick-button joystick-left" onclick="sendCommand(tankAName, 'MOVE_LEFT')">←</button>
+            <button class="joystick-button joystick-center" onclick="sendCommand(tankAName, 'FIRE')">F</button>
         </div>
     </div>
 
@@ -188,25 +188,38 @@
     </div>
 
     <div class="controls">
-        <h3>Tank B Controls</h3>
+        <h3 id="tankBControlsTitle">`${tankBName}` Controls</h3>
         <div class="joystick">
-            <button class="joystick-button joystick-up" onclick="sendCommand('tankB', 'MOVE_UP')">↑</button>
-            <button class="joystick-button joystick-right" onclick="sendCommand('tankB', 'MOVE_RIGHT')">→</button>
-            <button class="joystick-button joystick-down" onclick="sendCommand('tankB', 'MOVE_DOWN')">↓</button>
-            <button class="joystick-button joystick-left" onclick="sendCommand('tankB', 'MOVE_LEFT')">←</button>
-            <button class="joystick-button joystick-center" onclick="sendCommand('tankB', 'FIRE')">F</button>
+            <button class="joystick-button joystick-up" onclick="sendCommand(tankBName, 'MOVE_UP')">↑</button>
+            <button class="joystick-button joystick-right" onclick="sendCommand(tankBName, 'MOVE_RIGHT')">→</button>
+            <button class="joystick-button joystick-down" onclick="sendCommand(tankBName, 'MOVE_DOWN')">↓</button>
+            <button class="joystick-button joystick-left" onclick="sendCommand(tankBName, 'MOVE_LEFT')">←</button>
+            <button class="joystick-button joystick-center" onclick="sendCommand(tankBName, 'FIRE')">F</button>
         </div>
     </div>
 </div>
 
 <script>
     const gameBoard = document.getElementById('game-board');
-    const boardSize = 15;
+    let boardSize = 15;
     let gameState = null;
     let gameId = 'current'; // Default game ID
     let intervalId = null;
+    let tankAName = 'tankA';
+    let tankBName = 'tankB';
 
-    function initializeBoard() {
+    async function initializeBoard() {
+        const gameState = await getGameState();
+        tankAName = gameState.tankA.id;
+        tankBName = gameState.tankB.id;
+        boardSize = gameState.battleField.width ? gameState.battleField.width : boardSize;
+
+        const tankAControlsTitle = document.getElementById('tankAControlsTitle');
+        tankAControlsTitle.innerText = `${tankAName} Controls`;
+
+        const tankBControlsTitle = document.getElementById('tankBControlsTitle');
+        tankBControlsTitle.innerText = `${tankBName} Controls`;
+
         for (let y = 0; y < boardSize; y++) {
             for (let x = 0; x < boardSize; x++) {
                 const cell = document.createElement('div');
@@ -226,6 +239,12 @@
         tankB.id = 'tank-b';
         tankB.className = 'tank';
         gameBoard.appendChild(tankB);
+
+
+        // Fetch initial game state
+        await fetchRemoteStateAndUpdateLocalState();
+
+        intervalId = setInterval(fetchRemoteStateAndUpdateLocalState, 100);
     }
 
     async function sendCommand(tankId, action) {
@@ -242,7 +261,7 @@
             if (!response.ok) {
                 throw new Error('Failed to send command');
             }
-            await fetchGameState();
+            await fetchRemoteStateAndUpdateLocalState();
         } catch (error) {
             console.error('Error sending command:', error);
         }
@@ -280,14 +299,17 @@
         }
     }
 
-    async function fetchGameState() {
+    async function fetchRemoteStateAndUpdateLocalState() {
+        updateGameState(await getGameState());
+    }
+
+    async function getGameState() {
         try {
             const response = await fetch(`http://localhost:8080/games/${gameId}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch game state');
             }
-            const data = await response.json();
-            updateGameState(data);
+            return await response.json();
         } catch (error) {
             console.error('Error fetching game state:', error);
         }
@@ -306,7 +328,6 @@
             }
             return;
         }
-
         // Update tanks
         updateTank('tank-a', gameState.tankA);
         updateTank('tank-b', gameState.tankB);
@@ -328,7 +349,8 @@
     function destroyTank(tankId) {
         const tank = document.getElementById(tankId);
         tank.remove();
-        alert(`Tank ${tankId} is destroyed!`);
+        const tankName = tankId === 'tank-a' ? tankAName : tankBName;
+        alert(`Tank ${tankName} is destroyed!`);
         clearInterval(intervalId);
     }
 
@@ -383,11 +405,6 @@
 
     // Initialize the game board
     initializeBoard();
-
-    // Fetch initial game state
-    fetchGameState();
-
-    intervalId = setInterval(fetchGameState, 100);
 </script>
 </body>
 </html>
