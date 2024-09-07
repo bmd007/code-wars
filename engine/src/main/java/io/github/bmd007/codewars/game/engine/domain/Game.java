@@ -174,9 +174,7 @@ public class Game {
                 yield true;
             }
             case null, default -> {
-                if (!(battleField.getGameObject(x, y) instanceof Tank)) {
-                    battleField.convertToGround(firedBullet);
-                }
+                battleField.convertToGround(firedBullet);
                 firedBullet.move(x, y);
                 battleField.addGameObject(firedBullet);
                 yield false;
@@ -344,7 +342,7 @@ public class Game {
         @JsonIgnore
         public GameObject copyForDeath() {
             var almostDead = new GameObject(getX(), getY());
-            almostDead.setNotVisibleAfter(Instant.now().plusMillis(400));
+            almostDead.setNotVisibleAfter(Instant.now().plusMillis(50));
             return almostDead;
         }
 
